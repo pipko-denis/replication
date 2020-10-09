@@ -30,3 +30,9 @@ F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\o
 F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\obj\Debug\ReplicationWinService.csproj.CopyComplete
 F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\obj\Debug\ReplicationWinService.exe
 F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\obj\Debug\ReplicationWinService.pdb
+E:\Development\RZD\SPIDER\Replication\replication\obj\Debug\ReplicationWinService.csprojAssemblyReference.cache
+E:\Development\RZD\SPIDER\Replication\replication\obj\Debug\ReplicationWinService.ProjectInstaller.resources
+E:\Development\RZD\SPIDER\Replication\replication\obj\Debug\ReplicationWinService.csproj.GenerateResource.cache
+E:\Development\RZD\SPIDER\Replication\replication\obj\Debug\ReplicationWinService.csproj.CoreCompileInputs.cache
+E:\Development\RZD\SPIDER\Replication\replication\obj\Debug\ReplicationWinService.exe
+E:\Development\RZD\SPIDER\Replication\replication\obj\Debug\ReplicationWinService.pdb

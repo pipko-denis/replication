@@ -62,6 +62,35 @@ namespace ReplicationWinService.model
 
         }
 
+        public static int updateLastReplDateExt(Int32 tableId, bool error)
+        {
+            int result = 0;
+            MySqlCommand mySqlCommand = null;
+            MySqlConnection conn = null;
+            try
+            {
+                conn = new MySqlConnection(ServiceMain.mainConnString);
+                conn.Open();
+                mySqlCommand = new MySqlCommand("UPDATE `spider_cdc`.`t_stations_tables_replication` SET `repl_state` = 0, `last_repl_date` = now(), `last_repl_error` = "+
+                    ((error) ? "1" : "0") +" WHERE `id` = "+tableId+";", conn);
+                result = mySqlCommand.ExecuteNonQuery();
+                //logger.Info("Скрипт \"" + script + "\" выполнен!");
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Не удалось обновить дату последней репликации \"" + tableId + "\"");
+                logger.Error(ex.Message);
+                logger.Error(ex.StackTrace);
+            }
+            finally
+            {
+                if (mySqlCommand != null) mySqlCommand.Dispose();
+                if (conn != null) conn.Close();
+            }
+            return result;
+        }
+
+        [Obsolete("Depricated")]
         public static int updateLastReplDate(Int32 stationId, bool error)
         {
             int result = 0;
@@ -198,6 +227,109 @@ namespace ReplicationWinService.model
 
         }
 
+        public static ReplTableExt getReplicationTableExt()
+        {
+            ReplTableExt result = null;
+
+            MySqlConnection conn = null;
+            MySqlCommand mySqlCommand = null;
+            MySqlCommand mySqlCommandFields = null;
+            try
+            {
+
+                conn = new MySqlConnection(ConnString.getMainConnectionString());
+                //mySqlCommand = new MySqlCommand("CALL `sp_repl_tables_get_one_for_repl`(@out_id,@out_local_name,@out_remote_name);", conn);// select @out_id, @out_local_name, @out_remote_name;", conn);
+                mySqlCommand = new MySqlCommand("sp_repl_tables_get_one_for_repl_ext", conn);
+
+                mySqlCommand.CommandType = CommandType.StoredProcedure;
+                mySqlCommand.Parameters.Add(new MySqlParameter("@_table_id", MySqlDbType.Int32));
+                mySqlCommand.Parameters["@_table_id"].Direction = ParameterDirection.Output;
+                mySqlCommand.Parameters.Add(new MySqlParameter("@_local_tbl_name", MySqlDbType.VarChar));
+                mySqlCommand.Parameters["@_local_tbl_name"].Direction = ParameterDirection.Output;
+                mySqlCommand.Parameters.Add(new MySqlParameter("@_remote_tbl_name", MySqlDbType.VarChar));
+                mySqlCommand.Parameters["@_remote_tbl_name"].Direction = ParameterDirection.Output;
+                mySqlCommand.Parameters.Add(new MySqlParameter("@_key_col_name", MySqlDbType.VarChar));
+                mySqlCommand.Parameters["@_key_col_name"].Direction = ParameterDirection.Output;
+                mySqlCommand.Parameters.Add(new MySqlParameter("@_repl_rec_count", MySqlDbType.Int32));
+                mySqlCommand.Parameters["@_repl_rec_count"].Direction = ParameterDirection.Output;
+
+                mySqlCommand.Parameters.Add(new MySqlParameter("@_station_id", MySqlDbType.Int32));
+                mySqlCommand.Parameters["@_station_id"].Direction = ParameterDirection.Output;
+                mySqlCommand.Parameters.Add(new MySqlParameter("@_host", MySqlDbType.VarChar));
+                mySqlCommand.Parameters["@_host"].Direction = ParameterDirection.Output;
+                mySqlCommand.Parameters.Add(new MySqlParameter("@_port", MySqlDbType.Int32));
+                mySqlCommand.Parameters["@_port"].Direction = ParameterDirection.Output;
+                mySqlCommand.Parameters.Add(new MySqlParameter("@_login", MySqlDbType.VarChar));
+                mySqlCommand.Parameters["@_login"].Direction = ParameterDirection.Output;
+
+                mySqlCommand.Parameters.Add(new MySqlParameter("@_passwd", MySqlDbType.VarChar));
+                mySqlCommand.Parameters["@_passwd"].Direction = ParameterDirection.Output;
+                mySqlCommand.Parameters.Add(new MySqlParameter("@_db", MySqlDbType.VarChar));
+                mySqlCommand.Parameters["@_db"].Direction = ParameterDirection.Output;
+                mySqlCommand.Parameters.Add(new MySqlParameter("@_display_name", MySqlDbType.VarChar));
+                mySqlCommand.Parameters["@_display_name"].Direction = ParameterDirection.Output;
+                mySqlCommand.Parameters.Add(new MySqlParameter("@_last_repl_date", MySqlDbType.VarChar));
+                mySqlCommand.Parameters["@_last_repl_date"].Direction = ParameterDirection.Output;
+
+                conn.Open();
+                mySqlCommand.ExecuteNonQuery();
+
+
+                if (!mySqlCommand.Parameters["@_table_id"].Value.Equals(DBNull.Value))
+                {
+                    result = new ReplTableExt(
+                        mySqlCommand.Parameters["@_table_id"].Value,
+                        mySqlCommand.Parameters["@_local_tbl_name"].Value,
+                        mySqlCommand.Parameters["@_remote_tbl_name"].Value,
+                        mySqlCommand.Parameters["@_key_col_name"].Value,
+                        mySqlCommand.Parameters["@_repl_rec_count"].Value,
+
+                        mySqlCommand.Parameters["@_station_id"].Value,
+                        mySqlCommand.Parameters["@_host"].Value,
+                        mySqlCommand.Parameters["@_port"].Value,
+                        mySqlCommand.Parameters["@_login"].Value,
+                        mySqlCommand.Parameters["@_passwd"].Value,
+                        mySqlCommand.Parameters["@_db"].Value,
+                        mySqlCommand.Parameters["@_display_name"].Value,
+                        mySqlCommand.Parameters["@_last_repl_date"].Value
+                    );
+
+                    mySqlCommandFields = new MySqlCommand("SELECT COLUMN_NAME,columns.DATA_TYPE " +
+                                         "FROM information_schema.columns WHERE table_schema='spider_cdc' AND table_name='" + result.LocalName + "' " +
+                                         "AND NOT COLUMN_NAME IN ('id_repl','station_id') ORDER BY ORDINAL_POSITION;", conn);
+
+                    MySqlDataReader reader = mySqlCommandFields.ExecuteReader();
+
+                    if (result.localFields == null) result.localFields = new List<ReplField>();
+
+                    while (reader.Read())
+                    {
+                        result.localFields.Add(new ReplField(reader.GetString(0), reader.GetString(1)));
+                    }
+
+                }
+                else
+                {
+                    logger.Info("REPALLRRUN. Все таблицы уже реплицируются.");
+                }
+
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Не удалось получить таблицу для репликации(getReplicationTable):" + ex.Message);
+                logger.Error(ex.StackTrace);
+            }
+            finally
+            {
+                if (mySqlCommand != null) mySqlCommand.Dispose();
+                if (mySqlCommandFields != null) mySqlCommandFields.Dispose();
+                if (conn != null) { conn.Close(); }
+            }
+
+            return result;
+        }
+
+        [Obsolete("Depricated")]
         public static ReplTable getReplicationTable()
         {
             ReplTable result = null;
@@ -281,7 +413,7 @@ namespace ReplicationWinService.model
             {
                 conn = new MySqlConnection(ConnString.getMainConnectionString());
                 conn.Open();
-                mySqlCommand = new MySqlCommand("UPDATE t_repl_tables Set repl_state = 0 Where repl_state = 1;", conn);
+                mySqlCommand = new MySqlCommand("UPDATE t_stations_tables_replication Set repl_state = 0, `last_repl_date` = now(), `last_repl_error` = 1 Where repl_state = 1;", conn);
                 mySqlCommand.ExecuteNonQuery();
                 logger.Info("Состояние repl_state = 0 для таблицы всех таблиц сохранено!");
             }

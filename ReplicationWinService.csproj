@@ -55,8 +55,10 @@
     <Compile Include="model\DBConn.cs" />
     <Compile Include="model\ReplField.cs" />
     <Compile Include="model\ReplTable.cs" />
+    <Compile Include="model\ReplTableExt.cs" />
     <Compile Include="model\Station.cs" />
     <Compile Include="ReplTableThread.cs" />
+    <Compile Include="TableThread.cs" />
     <Compile Include="Utills.cs" />
     <Compile Include="ProjectInstaller.cs">
       <SubType>Component</SubType>

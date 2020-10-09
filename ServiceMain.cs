@@ -19,17 +19,15 @@ namespace ReplicationWinService
 
         private static ILog logger = LogManager.GetLogger("ServiceMain");
 
+        private static int maxReplThreads = 5;
 
         public static String mainConnString = null;
-        //private static List<int> listCurrentReplTables = new List<int>();
 
         private static List<TableThread> listThreads = new List<TableThread>();
 
-        //private Thread checkStateThread;
-
         private Thread replMainThread;
 
-        private bool stopService = false;
+        public static bool stopService = false;
 
         public ServiceMain()
         {
@@ -41,9 +39,6 @@ namespace ReplicationWinService
             logger.Info("Service started "+DateTime.Now);
             stopService = false;
 
-            //checkStateThread = new Thread(doScanWork);
-            //checkStateThread.Start();
-
             replMainThread = new Thread(doReplWork);
             replMainThread.Start();
         }
@@ -52,19 +47,23 @@ namespace ReplicationWinService
         private void doReplWork(object arg)
         {
 
-            ReplTable table = null;
+            ReplTableExt table = null;
 
             while (true)
             {
                 if (stopService) { break; }
 
-                if (listThreads.Count < )
+                Thread.Sleep(10000);
 
-                table = DBConn.getReplicationTable();
+                if (listThreads.Count >= maxReplThreads) {
+                    continue;
+                }
+
+                table = DBConn.getReplicationTableExt();
 
                 try
                 {
-                    if (table != null) new ReplTableThread(table);
+                    if (table != null) new TableThread(table);
                 }
                 catch (Exception ex)
                 {
@@ -72,14 +71,12 @@ namespace ReplicationWinService
                     logger.Error(ex.StackTrace);
                 }
 
-                Thread.Sleep(5000);
-
             }
 
 
         }
 
-
+        [Obsolete("Depricated")]
         private void doReplWorkOld(object arg)
         {
 
@@ -103,89 +100,6 @@ namespace ReplicationWinService
 
 
         }
-
-
-        private void doScanWork(object arg)
-        {
-
-            MySqlConnection conn = null;
-            int interval = 60000;
-            List<Station> stations = null;
-            String intervalStr = "";
-            String error = null;
-            bool isOpen = false;
-            int curStationId = 0;
-
-            while (true)
-            {
-                if (stopService) { break; }
-
-                if (stations == null) stations = new List<Station>();
-                else stations.Clear();
-                MySqlCommand mySqlCommand = null;
-                
-                try
-                {
-                    stations = DBConn.getStations(true);                    
-
-                    if (stations != null)
-                    {
-                        conn = new MySqlConnection(mainConnString);
-                        conn.Open();
-                        logger.Info("DoScanWork: Подключение к серверу для сохранения результатов сканирования открыто.");
-                        
-                        foreach (Station station in stations)
-                        {
-                            curStationId = station.Id;
-                            isOpen = Utills.IsPortOpen(station.Host, station.Port, 5000, out error);
-                            mySqlCommand = new MySqlCommand("INSERT INTO pauk_kdc.t_scan_results (station_id, result_code, error_message) VALUES ("+ station.Id+ ", "+ isOpen + ", '"+ error + "')", conn);
-                            mySqlCommand.ExecuteNonQuery();
-                        }
-                    }
-
-                }
-                catch (Exception ex)
-                {
-                    logger.Error("DoScanWork: Не удалось созранить данные по результату сканирования (" + curStationId + ", " + isOpen + ", '" + error + "')");
-                    logger.Error(ex.Message);
-                    logger.Error(ex.StackTrace);
-                }
-                finally
-                {
-                    if (mySqlCommand != null) mySqlCommand.Dispose();
-                    if (conn != null) conn.Close();
-                }
-
-
-
-                try
-                {
-                    intervalStr = DBConn.getProperty(mainConnString, "ScanInterval");
-                    if (!Int32.TryParse(intervalStr, out interval))
-                    {
-                        interval = 60000;
-                        logger.Error("DoScanWork: Не удалось конвертировать значение параметра ScanInterval, будет использоваться значение по умолчанию:" + interval);
-                    }
-                    else {
-                        logger.Info("DoScanWork: Полученное из БД значение параметра ScanInterval:" + interval);
-                        
-                    }
-                }
-                catch (Exception ex)
-                {
-                    logger.Error("DoScanWork: Не удалось получить значение параметра ScanInterval");
-                    logger.Error(ex.Message);
-                    logger.Error(ex.StackTrace);
-                }
-
-                Thread.Sleep(interval);
-
-            }
-
-
-        }
-
-
 
 
         protected override void OnStop()

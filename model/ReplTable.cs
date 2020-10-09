@@ -9,7 +9,7 @@ namespace ReplicationWinService.model
 {
     class ReplTable
     {
-        private static ILog logger = LogManager.GetLogger("ReplTable");
+        public static ILog logger = LogManager.GetLogger("ReplTable");
 
         public Int32 Id
          { get; set;}
@@ -29,6 +29,11 @@ namespace ReplicationWinService.model
         public String ReplRecCnt
         { get; set; }
 
+        public ReplTable()
+        {
+            
+        }
+
         public ReplTable(int id, string localName, string remoteName)
         {
             Id = id;
@@ -46,8 +51,7 @@ namespace ReplicationWinService.model
             }
             catch (Exception ex)
             {
-                logger.Error("Конструктор ReplTable");
-                logger.Error(ex.Message);
+                logger.Error("Конструктор ReplTable: "+ex.Message);
                 logger.Error(ex.StackTrace);
             }
             this.LocalName = value2.ToString();
