@@ -1,0 +1,99 @@
+﻿Выполняется установка сборки 'F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService\ReplicationWinService\bin\Debug\ReplicationWinService.exe'.
+Затронуты следующие параметры:
+   i = 
+   logfile = F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService\ReplicationWinService\bin\Debug\ReplicationWinService.InstallLog
+   assemblypath = F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService\ReplicationWinService\bin\Debug\ReplicationWinService.exe
+   logtoconsole = 
+Устанавливается служба SpiderReplicationService...
+Служба SpiderReplicationService успешно установлена.
+Создается исходный EventLog SpiderReplicationService в журнале Application...
+Выполняется фиксация сборки 'F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService\ReplicationWinService\bin\Debug\ReplicationWinService.exe'.
+Затронуты следующие параметры:
+   i = 
+   logfile = F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService\ReplicationWinService\bin\Debug\ReplicationWinService.InstallLog
+   assemblypath = F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService\ReplicationWinService\bin\Debug\ReplicationWinService.exe
+   logtoconsole = 
+Выполняется удаление сборки 'F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.exe'.
+Затронуты следующие параметры:
+   logtoconsole = 
+   logfile = F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.InstallLog
+   assemblypath = F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.exe
+Выполняется удаление источника EventLog SpiderReplicationService.
+Выполняется удаление службы SpiderReplicationService из системы...
+Служба SpiderReplicationService успешно удалена из системы.
+Выполняется установка сборки 'F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.exe'.
+Затронуты следующие параметры:
+   logtoconsole = 
+   logfile = F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.InstallLog
+   assemblypath = F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.exe
+Устанавливается служба SpiderReplicationService...
+Служба SpiderReplicationService успешно установлена.
+Создается исходный EventLog SpiderReplicationService в журнале Application...
+Выполняется фиксация сборки 'F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.exe'.
+Затронуты следующие параметры:
+   logtoconsole = 
+   logfile = F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.InstallLog
+   assemblypath = F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.exe
+Выполняется удаление сборки 'F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.exe'.
+Затронуты следующие параметры:
+   logtoconsole = 
+   logfile = F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.InstallLog
+   assemblypath = F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.exe
+Выполняется удаление источника EventLog SpiderReplicationService.
+Выполняется удаление службы SpiderReplicationService из системы...
+Служба SpiderReplicationService успешно удалена из системы.
+Выполняется установка сборки 'F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.exe'.
+Затронуты следующие параметры:
+   logtoconsole = 
+   logfile = F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.InstallLog
+   assemblypath = F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.exe
+Устанавливается служба SpiderReplicationService...
+Служба SpiderReplicationService успешно установлена.
+Создается исходный EventLog SpiderReplicationService в журнале Application...
+Выполняется фиксация сборки 'F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.exe'.
+Затронуты следующие параметры:
+   logtoconsole = 
+   logfile = F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.InstallLog
+   assemblypath = F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.exe
+Выполняется удаление сборки 'F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.exe'.
+Затронуты следующие параметры:
+   logtoconsole = 
+   logfile = F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.InstallLog
+   assemblypath = F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.exe
+Выполняется удаление источника EventLog SpiderReplicationService.
+Выполняется удаление службы SpiderReplicationService из системы...
+Служба SpiderReplicationService успешно удалена из системы.
+Выполняется установка сборки 'F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.exe'.
+Затронуты следующие параметры:
+   logtoconsole = 
+   logfile = F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.InstallLog
+   assemblypath = F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.exe
+Устанавливается служба SpiderReplicationService...
+Служба SpiderReplicationService успешно установлена.
+Создается исходный EventLog SpiderReplicationService в журнале Application...
+Выполняется фиксация сборки 'F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.exe'.
+Затронуты следующие параметры:
+   logtoconsole = 
+   logfile = F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.InstallLog
+   assemblypath = F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.exe
+Выполняется удаление сборки 'F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.exe'.
+Затронуты следующие параметры:
+   logtoconsole = 
+   logfile = F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.InstallLog
+   assemblypath = F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.exe
+Выполняется удаление источника EventLog SpiderReplicationService.
+Выполняется удаление службы SpiderReplicationService из системы...
+Служба SpiderReplicationService успешно удалена из системы.
+Выполняется установка сборки 'F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.exe'.
+Затронуты следующие параметры:
+   logtoconsole = 
+   logfile = F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.InstallLog
+   assemblypath = F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.exe
+Устанавливается служба SpiderReplicationService...
+Служба SpiderReplicationService успешно установлена.
+Создается исходный EventLog SpiderReplicationService в журнале Application...
+Выполняется фиксация сборки 'F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.exe'.
+Затронуты следующие параметры:
+   logtoconsole = 
+   logfile = F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.InstallLog
+   assemblypath = F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.exe
