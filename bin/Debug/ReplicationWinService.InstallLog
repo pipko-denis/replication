@@ -97,3 +97,16 @@
    logtoconsole = 
    logfile = F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.InstallLog
    assemblypath = F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\ReplicationWinService.exe
+Выполняется установка сборки 'E:\Development\RZD\SPIDER\Replication\replication\bin\Debug\ReplicationWinService.exe'.
+Затронуты следующие параметры:
+   logtoconsole = 
+   logfile = E:\Development\RZD\SPIDER\Replication\replication\bin\Debug\ReplicationWinService.InstallLog
+   assemblypath = E:\Development\RZD\SPIDER\Replication\replication\bin\Debug\ReplicationWinService.exe
+Устанавливается служба SpiderReplicationService...
+Служба SpiderReplicationService успешно установлена.
+Создается исходный EventLog SpiderReplicationService в журнале Application...
+Выполняется фиксация сборки 'E:\Development\RZD\SPIDER\Replication\replication\bin\Debug\ReplicationWinService.exe'.
+Затронуты следующие параметры:
+   logtoconsole = 
+   logfile = E:\Development\RZD\SPIDER\Replication\replication\bin\Debug\ReplicationWinService.InstallLog
+   assemblypath = E:\Development\RZD\SPIDER\Replication\replication\bin\Debug\ReplicationWinService.exe

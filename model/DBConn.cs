@@ -69,9 +69,9 @@ namespace ReplicationWinService.model
             MySqlConnection conn = null;
             try
             {
-                conn = new MySqlConnection(ServiceMain.mainConnString);
+                conn = new MySqlConnection(ConnString.getMainConnectionString());
                 conn.Open();
-                mySqlCommand = new MySqlCommand("UPDATE `spider_cdc`.`t_stations_tables_replication` SET `repl_state` = 0, `last_repl_date` = now(), `last_repl_error` = "+
+                mySqlCommand = new MySqlCommand("UPDATE `t_stations_tables_replication` SET `repl_state` = 0, `last_repl_date` = now(), `last_repl_error` = "+
                     ((error) ? "1" : "0") +" WHERE `id` = "+tableId+";", conn);
                 result = mySqlCommand.ExecuteNonQuery();
                 //logger.Info("Скрипт \"" + script + "\" выполнен!");
@@ -98,7 +98,7 @@ namespace ReplicationWinService.model
             MySqlConnection conn = null;
             try
             {
-                conn = new MySqlConnection(ServiceMain.mainConnString);
+                conn = new MySqlConnection(ConnString.getMainConnectionString());
                 conn.Open();
                 logger.Info("updateLastReplDate conn.Open");
                 if (error) mySqlCommand = new MySqlCommand("update `t_stations` Set `t_stations`.`repl_error` = 1  Where `id` = " + stationId + ";", conn); 
@@ -128,7 +128,7 @@ namespace ReplicationWinService.model
             MySqlConnection conn = null;
             try
             {
-                conn = new MySqlConnection(ServiceMain.mainConnString);
+                conn = new MySqlConnection(ConnString.getMainConnectionString());
                 conn.Open();
                 mySqlCommand = new MySqlCommand(script, conn);
 
@@ -149,7 +149,47 @@ namespace ReplicationWinService.model
             return result;
         }
 
+        public static int getLocalMaxReplId(ReplTableExt table)
+        {
+            int maxId = 0;
+            MySqlCommand mySqlCommand = null;
+            MySqlConnection conn = null;
+            MySqlDataReader reader = null;
+            try
+            {
+                conn = new MySqlConnection(ConnString.getMainConnectionString());
+                conn.Open();
+                String script = table.getMaxIdScript();
+                //logger.Info(script);                
+                mySqlCommand = new MySqlCommand(script, conn);
 
+                reader = mySqlCommand.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    if (!reader.IsDBNull(0))
+                    {
+                        maxId = reader.GetInt32(0);
+                    }
+                }
+                logger.Info("Таблица " + table.LocalName + " последняя запись с id = " + maxId);
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Не получить макисмальный идентификатор для репликации для таблицы " + table.LocalName + ", хост:" + table.Host);
+                logger.Error(ex.Message);
+                logger.Error(ex.StackTrace);
+            }
+            finally
+            {
+                if (mySqlCommand != null) mySqlCommand.Dispose();
+                if (conn != null) conn.Close();
+            }
+            return maxId;
+        }
+
+
+        [Obsolete("Deprecated")]
         public static int getLocalMaxReplId(Station station, ReplTable table)
         {
             int maxId = 0;
@@ -158,8 +198,7 @@ namespace ReplicationWinService.model
             MySqlDataReader reader = null;
             try
             {
-                //logger.Info(ServiceMain.mainConnString);
-                conn = new MySqlConnection(ServiceMain.mainConnString);
+                conn = new MySqlConnection(ConnString.getMainConnectionString());
                 conn.Open();
                 String script = table.getLocalMaxIdScript(station.Id);
                 //logger.Info(script);                
@@ -266,6 +305,8 @@ namespace ReplicationWinService.model
                 mySqlCommand.Parameters["@_passwd"].Direction = ParameterDirection.Output;
                 mySqlCommand.Parameters.Add(new MySqlParameter("@_db", MySqlDbType.VarChar));
                 mySqlCommand.Parameters["@_db"].Direction = ParameterDirection.Output;
+                mySqlCommand.Parameters.Add(new MySqlParameter("@_max_calced_id", MySqlDbType.Int32));
+                mySqlCommand.Parameters["@_max_calced_id"].Direction = ParameterDirection.Output;
                 mySqlCommand.Parameters.Add(new MySqlParameter("@_display_name", MySqlDbType.VarChar));
                 mySqlCommand.Parameters["@_display_name"].Direction = ParameterDirection.Output;
                 mySqlCommand.Parameters.Add(new MySqlParameter("@_last_repl_date", MySqlDbType.VarChar));
@@ -277,6 +318,7 @@ namespace ReplicationWinService.model
 
                 if (!mySqlCommand.Parameters["@_table_id"].Value.Equals(DBNull.Value))
                 {
+
                     result = new ReplTableExt(
                         mySqlCommand.Parameters["@_table_id"].Value,
                         mySqlCommand.Parameters["@_local_tbl_name"].Value,
@@ -290,6 +332,7 @@ namespace ReplicationWinService.model
                         mySqlCommand.Parameters["@_login"].Value,
                         mySqlCommand.Parameters["@_passwd"].Value,
                         mySqlCommand.Parameters["@_db"].Value,
+                        mySqlCommand.Parameters["@_max_calced_id"].Value,
                         mySqlCommand.Parameters["@_display_name"].Value,
                         mySqlCommand.Parameters["@_last_repl_date"].Value
                     );
@@ -428,6 +471,74 @@ namespace ReplicationWinService.model
                 if (mySqlCommand != null) mySqlCommand.Dispose();
                 if (conn != null) conn.Close();
             }
+        }
+
+        public static List<String> getReplicationScripts(ReplTableExt table, int startId, out bool error)
+        {
+            error = false;
+            List<String> result = new List<String>();
+
+            MySqlCommand mySqlCommand = null;
+            MySqlConnection conn = null;
+
+            try
+            {
+                String remoteSelectScript = table.getRemoteSelectScript(startId);
+                conn = new MySqlConnection("Server=" + table.Host + ";Port=" + table.Port + ";Database=" + table.Db + ";Uid=" + table.Login + ";Pwd=" + table.Pass + ";Connection Timeout=30;default command timeout=20;");
+                conn.Open();
+                mySqlCommand = new MySqlCommand(remoteSelectScript, conn);
+                mySqlCommand.CommandTimeout = 30;
+                logger.Info(table.getRemoteSelectScript(startId));
+                MySqlDataReader reader = mySqlCommand.ExecuteReader();
+                String values = "";
+
+                while (reader.Read())
+                {
+                    values = "";
+                    for (int i = 0; i < table.localFields.Count(); i++)
+                    {
+                        if (reader.IsDBNull(i))
+                        {
+                            values += " NULL,";
+                        }
+                        else
+                        {
+                            if (table.localFields[i].DataType.Equals(ReplField.FieldDataTypes.FtFloat))
+                            {
+                                values += " " + reader.GetString(table.localFields[i].Name).Replace(",", ".") + ",";
+                            }
+                            else if (table.localFields[i].DataType.Equals(ReplField.FieldDataTypes.FtDateTime))
+                            {
+                                values += " '" + reader.GetDateTime(table.localFields[i].Name).ToString("yyyy-MM-dd HH:mm:ss") + "',";
+                            }
+                            else
+                            {
+                                values += " '" + reader.GetString(table.localFields[i].Name) + "',";
+                            }
+
+                        }
+                    }
+
+                    values += ");";
+
+                    result.Add(values);
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Не удалось получить данные с удалённого сервера для таблицы " + table.LocalName);
+                logger.Error(ex.Message);
+                logger.Error(ex.StackTrace);
+                error = true;
+            }
+            finally
+            {
+                if (mySqlCommand != null) mySqlCommand.Dispose();
+                if (conn != null) conn.Close();
+            }
+            return result;
         }
 
 

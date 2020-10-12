@@ -32,21 +32,25 @@ namespace ReplicationWinService.model
         public String StationName
         { get; set; }
 
-        public ReplTableExt() {}
+        public String LastReplDate
+        { get; set; }
+
+        public ReplTableExt() { }
 
         public ReplTableExt(object id, object localName, object remoteName, object idColName, object replRecCnt
-            , object stationId, object host, object port, object login, object pass, object db, object maxCalcedId, object stationName) 
-            :base(id, localName, remoteName, idColName, replRecCnt)
+            , object stationId, object host, object port, object login, object pass, object db, object maxCalcedId, object stationName, object lastReplDate)
+            : base(id, localName, remoteName, idColName, replRecCnt)
         {
             try
             {
-                this.StationId = (int)stationId;
-                this.Port = (int)port;
-                this.MaxCalcedId = (int)maxCalcedId;
+                if (stationId != null) this.StationId = (int)stationId;
+                if (port != null) this.Port = (int)port;
+                logger.Error("maxCalcedId: " + maxCalcedId);
+                if (maxCalcedId != null) this.MaxCalcedId = (int)maxCalcedId;
             }
             catch (Exception ex)
             {
-                logger.Error("Конструктор ReplTableExt: "+ ex.Message);
+                logger.Error("Конструктор ReplTableExt: " + ex.Message);
                 logger.Error(ex.StackTrace);
             }
 
@@ -55,6 +59,13 @@ namespace ReplicationWinService.model
             this.Pass = pass.ToString();
             this.Db = db.ToString();
             this.StationName = stationName.ToString();
+            this.LastReplDate = lastReplDate.ToString();
+        }
+
+        //[Override]
+        public String getMaxIdScript()
+        {
+            return " SELECT COALESCE(MAX(" + this.IdColName + "),0) as maxId from " + this.LocalName +";";
         }
     }
 }

@@ -26,6 +26,7 @@ namespace ReplicationWinService
             this.thread.Start();
         }
 
+        [Obsolete("Deprecated")]
         private void doTableReplication() {
             logger.Info(this.table.LocalName + " replication ");
 

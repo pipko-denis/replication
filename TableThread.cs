@@ -13,13 +13,13 @@ namespace ReplicationWinService
     {
         private static ILog logger = LogManager.GetLogger("TableThread");
 
-        DateTime dateStart
+        public DateTime dateStart
         { get; set; }
 
-        Thread thread
+        public Thread thread
         { get; set; }
 
-        ReplTableExt table
+        public ReplTableExt table
         { get; set; }
 
         public TableThread(ReplTableExt table)
@@ -27,6 +27,7 @@ namespace ReplicationWinService
             this.dateStart = DateTime.Now;
             this.thread = new Thread(doTableReplication);
             this.table = table;
+            logger.Error("Запускаем репликацию " + this.table.LocalName + " (" + this.table.Id + "), хост:" + this.table.StationName);
             this.thread.Start();
         }
 
@@ -35,14 +36,23 @@ namespace ReplicationWinService
             bool error = false;
             try
             {
-                logger.Info(this.table.LocalName + " replication ");
-                Thread.Sleep(5000);// ПАУЗ ПОЗЖЕ УБЕРЁМ, А МОЖЕТ И НЕТ
+                //logger.Info(this.table.LocalName + " replication ");
+                Thread.Sleep(30000);// ПАУЗУ ПОЗЖЕ УБЕРЁМ, А МОЖЕТ И НЕТ
 
                 //ВЫПОЛНЕНИЕ РЕПЛИКАЦИИ БУДЕТ ТУТ
+                //получаем последнюю среплицированную запись
+                int maxId = DBConn.getLocalMaxReplId(this.table);
+
+                List<String> listInsScripts = DBConn.getReplicationScripts(this.table, maxId, out error);
+
+                foreach (String insertScript in listInsScripts) {
+                    logger.Info("First one from "+ listInsScripts.Count+" is: "+insertScript);
+                    break;
+                }
 
             }
             catch (Exception ex) {
-                logger.Error("Не удалось выполнить репликацию таблицы " + this.table.RemoteName+ " ("+ this.table.Id + "), хост:" + this.table.StationName + "(" + this.table.StationId + ")");
+                logger.Error("Не удалось репликация таблицы " + this.table.LocalName + " ("+ this.table.Id + "), хост:" + this.table.StationName );
                 logger.Error(ex.Message);
                 logger.Error(ex.StackTrace);
                 error = true;
@@ -51,11 +61,15 @@ namespace ReplicationWinService
                 try
                 {
                     if (ServiceMain.stopService) break;
-                    if (DBConn.updateLastReplDateExt(this.table.Id, error) > 0) break;
+                    if (DBConn.updateLastReplDateExt(this.table.Id, error) > 0)
+                    {
+                        logger.Error("Репликация завершена " + this.table.LocalName + " (" + this.table.Id + "), хост:" + this.table.StationName);
+                        break;
+                    }
                 }
                 catch (Exception ex)
                 {
-                    logger.Error("Не удалось сохранить результат репликации " + this.table.RemoteName + " (" + this.table.Id + "), хост:" + this.table.StationName + "(" + this.table.StationId + ")");
+                    logger.Error("Не удалось сохранить результат репликации " + this.table.LocalName + " (" + this.table.Id + "), хост:" + this.table.StationName );
                     logger.Error(ex.Message);
                     logger.Error(ex.StackTrace);
                     Thread.Sleep(20000);
@@ -63,5 +77,6 @@ namespace ReplicationWinService
             }
 
         }
+
     }
 }
