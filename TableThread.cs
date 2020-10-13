@@ -37,7 +37,7 @@ namespace ReplicationWinService
             try
             {
                 //logger.Info(this.table.LocalName + " replication ");
-                Thread.Sleep(30000);// ПАУЗУ ПОЗЖЕ УБЕРЁМ, А МОЖЕТ И НЕТ
+                //Thread.Sleep(20000);// ПАУЗУ ПОЗЖЕ УБЕРЁМ, А МОЖЕТ И НЕТ
 
                 //ВЫПОЛНЕНИЕ РЕПЛИКАЦИИ БУДЕТ ТУТ
                 //получаем последнюю среплицированную запись
@@ -55,7 +55,8 @@ namespace ReplicationWinService
                     if (incr > 4)
                     {
                         logger.Info(str);
-                        //DBConn.replicationInsert(str);//needed
+                        DBConn.replicationInsert(str);//needed
+                        Thread.Sleep(500);
                         incr = 0;
                         str = insertStrBeg;
                     }
@@ -69,10 +70,9 @@ namespace ReplicationWinService
                 if (incr > 0)
                 {
                     logger.Info(str);
-                    //DBConn.replicationInsert(str);//needed
+                    DBConn.replicationInsert(str);//needed
+                    Thread.Sleep(500);
                 }
-                logger.Info("DBConn.updateLastReplDate");
-                //DBConn.updateLastReplDate(station.Id, error);//needed
 
             }
             catch (Exception ex) {
@@ -85,7 +85,7 @@ namespace ReplicationWinService
             while (true)  {
                 try
                 {
-                    if  ( (ServiceMain.stopService) || (cntr > 15)) break; // can't save results more than 15 min
+                    if  (cntr > 15) break; // can't save results more than 15 min
                     if (DBConn.updateLastReplDateExt(this.table.Id, error) > 0)
                     {
                         logger.Error("Репликация завершена " + this.table.LocalName + " (" + this.table.Id + "), хост:" + this.table.StationName);

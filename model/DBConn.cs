@@ -121,6 +121,36 @@ namespace ReplicationWinService.model
         }
 
 
+        public static int replicationInsert(String script, ReplTableExt tableExt, int maxId)
+        {
+            int result = 0;
+            MySqlCommand mySqlCommand = null;
+            MySqlConnection conn = null;
+            try
+            {
+                conn = new MySqlConnection(ConnString.getMainConnectionString());
+                conn.Open();
+                script += "UPDATE `spider_cdc`.`t_stations_tables_replication` SET `last_repl_date` = now() , `max_calced_id` = " + maxId+
+                          " Where `id` = "+tableExt.Id;
+                mySqlCommand = new MySqlCommand(script, conn);
+
+                result = mySqlCommand.ExecuteNonQuery();
+                //logger.Info("Скрипт \"" + script + "\" выполнен!");
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Не удалось выполнить скрипт \"" + script + "\"");
+                logger.Error(ex.Message);
+                logger.Error(ex.StackTrace);
+            }
+            finally
+            {
+                if (mySqlCommand != null) mySqlCommand.Dispose();
+                if (conn != null) conn.Close();
+            }
+            return result;
+        }
+
         public static int replicationInsert(String script)
         {
             int result = 0;
@@ -500,7 +530,7 @@ namespace ReplicationWinService.model
                     {
                         if (reader.IsDBNull(i))
                         {
-                            values += " NULL,";
+                            values += " NULL";
                         }
                         else
                         {
@@ -517,10 +547,11 @@ namespace ReplicationWinService.model
                                 values += " '" + reader.GetString(table.localFields[i].Name) + "'";
                             }
 
-                            if ( i < cntFlds ) {
-                                values += ",";
-                            }
+                        }
 
+                        if (i < cntFlds)
+                        {
+                            values += ",";
                         }
                     }
 

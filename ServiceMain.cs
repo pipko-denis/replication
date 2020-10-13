@@ -39,6 +39,8 @@ namespace ReplicationWinService
             logger.Info("Service started "+DateTime.Now);
             stopService = false;
 
+            DBConn.saveParamsOnServiceStop();
+
             replMainThread = new Thread(doReplWork);
             replMainThread.Start();
         }
