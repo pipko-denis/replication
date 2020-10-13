@@ -45,10 +45,34 @@ namespace ReplicationWinService
 
                 List<String> listInsScripts = DBConn.getReplicationScripts(this.table, maxId, out error);
 
-                foreach (String insertScript in listInsScripts) {
-                    logger.Info("First one from "+ listInsScripts.Count+" is: "+insertScript);
-                    break;
+                String insertStrBeg = table.getLocalInsertScriptBeg();
+
+
+                string str = insertStrBeg;
+                int incr = 0;
+                foreach (String script in listInsScripts)
+                {
+                    if (incr > 4)
+                    {
+                        logger.Info(str);
+                        //DBConn.replicationInsert(str);//needed
+                        incr = 0;
+                        str = insertStrBeg;
+                    }
+                    str += script;
+                    if (incr < 4) str += ", ";
+                    incr++;
+                    //logger.Info(str);
+
+                    //logger.Info("INCR="+incr);
                 }
+                if (incr > 0)
+                {
+                    logger.Info(str);
+                    //DBConn.replicationInsert(str);//needed
+                }
+                logger.Info("DBConn.updateLastReplDate");
+                //DBConn.updateLastReplDate(station.Id, error);//needed
 
             }
             catch (Exception ex) {
@@ -57,15 +81,17 @@ namespace ReplicationWinService
                 logger.Error(ex.StackTrace);
                 error = true;
             }
+            int cntr = 0;
             while (true)  {
                 try
                 {
-                    if (ServiceMain.stopService) break;
+                    if  ( (ServiceMain.stopService) || (cntr > 15)) break; // can't save results more than 15 min
                     if (DBConn.updateLastReplDateExt(this.table.Id, error) > 0)
                     {
                         logger.Error("Репликация завершена " + this.table.LocalName + " (" + this.table.Id + "), хост:" + this.table.StationName);
                         break;
                     }
+                    cntr++;
                 }
                 catch (Exception ex)
                 {

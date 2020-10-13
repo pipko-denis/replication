@@ -494,7 +494,8 @@ namespace ReplicationWinService.model
 
                 while (reader.Read())
                 {
-                    values = "";
+                    values = "(";
+                    int cntFlds = table.localFields.Count()-1;
                     for (int i = 0; i < table.localFields.Count(); i++)
                     {
                         if (reader.IsDBNull(i))
@@ -505,21 +506,25 @@ namespace ReplicationWinService.model
                         {
                             if (table.localFields[i].DataType.Equals(ReplField.FieldDataTypes.FtFloat))
                             {
-                                values += " " + reader.GetString(table.localFields[i].Name).Replace(",", ".") + ",";
+                                values += " " + reader.GetString(table.localFields[i].Name).Replace(",", ".") ;
                             }
                             else if (table.localFields[i].DataType.Equals(ReplField.FieldDataTypes.FtDateTime))
                             {
-                                values += " '" + reader.GetDateTime(table.localFields[i].Name).ToString("yyyy-MM-dd HH:mm:ss") + "',";
+                                values += " '" + reader.GetDateTime(table.localFields[i].Name).ToString("yyyy-MM-dd HH:mm:ss") + "'";
                             }
                             else
                             {
-                                values += " '" + reader.GetString(table.localFields[i].Name) + "',";
+                                values += " '" + reader.GetString(table.localFields[i].Name) + "'";
+                            }
+
+                            if ( i < cntFlds ) {
+                                values += ",";
                             }
 
                         }
                     }
 
-                    values += ");";
+                    values += ")";
 
                     result.Add(values);
 

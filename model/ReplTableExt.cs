@@ -62,6 +62,21 @@ namespace ReplicationWinService.model
             this.LastReplDate = lastReplDate.ToString();
         }
 
+        internal string getLocalInsertScriptBeg()
+        {
+
+            String result = " INSERT `" + this.LocalName + "` (";
+            int cnt = this.localFields.Count() - 1;
+            for (int i = 0; i < this.localFields.Count(); i++)
+            {
+                result += "`" + this.localFields[i].Name + "`";
+                if ( i < cnt ) result += ",";
+            }
+
+            result += " )VALUES";
+            return result;
+        }
+
         //[Override]
         public String getMaxIdScript()
         {
