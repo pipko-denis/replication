@@ -156,7 +156,7 @@ namespace ReplicationWinService
 
             try
             {
-                conn = new MySqlConnection(ServiceMain.mainConnString);
+                conn = new MySqlConnection(ConnString.getMainConnectionString());
                 conn.Open();
                 mySqlCommand = new MySqlCommand("UPDATE t_repl_tables Set repl_state = 0 Where id = " + this.table.Id + ";", conn);
                 mySqlCommand.ExecuteNonQuery();

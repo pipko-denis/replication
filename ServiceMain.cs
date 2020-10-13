@@ -19,9 +19,12 @@ namespace ReplicationWinService
 
         private static ILog logger = LogManager.GetLogger("ServiceMain");
 
-        private static int maxReplThreads = 2;
+        private static int maxReplThreads = 10;
 
-        public static String mainConnString = null;
+        public static bool showScripts = false;
+
+        private static int mainThreadSleepMs = 5000;
+
 
         private static List<TableThread> listThreads = new List<TableThread>();
 
@@ -39,7 +42,29 @@ namespace ReplicationWinService
             logger.Info("Service started "+DateTime.Now);
             stopService = false;
 
+            //На всякий пожарный обнуляем в БД состояние репликации
             DBConn.saveParamsOnServiceStop();
+
+            //Получаем настройки
+            if (!Int32.TryParse(System.Configuration.ConfigurationManager.AppSettings.Get("maxReplThreads"),out maxReplThreads) ) {
+                maxReplThreads = 10;
+            }
+
+            if (!Boolean.TryParse(System.Configuration.ConfigurationManager.AppSettings.Get("showScripts"), out showScripts))
+            {
+                showScripts = false;
+            }
+
+            if (!Int32.TryParse(System.Configuration.ConfigurationManager.AppSettings.Get("maxReplThreads"), out maxReplThreads))
+            {
+                maxReplThreads = 2000;
+            }
+            else {
+                if (mainThreadSleepMs < 2000) mainThreadSleepMs = 2000;
+            }
+            
+
+
 
             replMainThread = new Thread(doReplWork);
             replMainThread.Start();
@@ -60,7 +85,7 @@ namespace ReplicationWinService
             {
                 if (stopService) { break; }
 
-                Thread.Sleep(5000);
+                Thread.Sleep(mainThreadSleepMs);
 
                 //проверяем не пора ли прибить какой-то поток, т.к. он слишком долго работает - начало
                 TimeSpan ts;
@@ -81,7 +106,7 @@ namespace ReplicationWinService
                         addingToRemoveList = true;
                     }
 
-                    //добавление в список удаляемых потоков и отклчение
+                    //добавление в список удаляемых потоков и отключение (Abort) старых потоков
                     if (addingToRemoveList)
                     {
                         if (listDelThreads == null) listDelThreads = new List<TableThread>();
@@ -91,16 +116,13 @@ namespace ReplicationWinService
 /**/
 
                 }
+
+                //Удаляем потоки из списка текущих потоков
                 if (listDelThreads != null) {
                     listThreads = listThreads.Except(listDelThreads).ToList();
                 }
-
-
-
-                //TableThread[] list = Array.FindAll(listThreads, elem => elem.thread.isAlive);//(listThreads.ToArray<TableThread>, threadIsAlive);
-                //listThreads.RemoveAll()
-
                 //проверяем не пора ли прибить какой-то поток, т.к. он слишком долго работает - конец
+
 
                 //проверяем, если потоков уже максимальное кол-во, то больше пока что не создаём                
                 if (listThreads.Count >= maxReplThreads) {

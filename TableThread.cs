@@ -36,10 +36,9 @@ namespace ReplicationWinService
             bool error = false;
             try
             {
-                //logger.Info(this.table.LocalName + " replication ");
-                //Thread.Sleep(20000);// ПАУЗУ ПОЗЖЕ УБЕРЁМ, А МОЖЕТ И НЕТ
+                //Thread.Sleep(1000);
+                //ВЫПОЛНЕНИЕ РЕПЛИКАЦИИ
 
-                //ВЫПОЛНЕНИЕ РЕПЛИКАЦИИ БУДЕТ ТУТ
                 //получаем последнюю среплицированную запись
                 int maxId = DBConn.getLocalMaxReplId(this.table);
 
@@ -54,24 +53,19 @@ namespace ReplicationWinService
                 {
                     if (incr > 4)
                     {
-                        logger.Info(str);
-                        DBConn.replicationInsert(str);//needed
-                        Thread.Sleep(500);
+                        if (ServiceMain.showScripts)  logger.Info(str);
+                        DBConn.replicationInsert(str);
                         incr = 0;
                         str = insertStrBeg;
                     }
                     str += script;
                     if (incr < 4) str += ", ";
                     incr++;
-                    //logger.Info(str);
-
-                    //logger.Info("INCR="+incr);
                 }
                 if (incr > 0)
                 {
-                    logger.Info(str);
-                    DBConn.replicationInsert(str);//needed
-                    Thread.Sleep(500);
+                    if (ServiceMain.showScripts) logger.Info(str);
+                    DBConn.replicationInsert(str);
                 }
 
             }
@@ -85,7 +79,7 @@ namespace ReplicationWinService
             while (true)  {
                 try
                 {
-                    if  (cntr > 15) break; // can't save results more than 15 min
+                    if  (cntr > 15) break; // if we can't save results more than 5 min (Thread.Sleep(20000);)
                     if (DBConn.updateLastReplDateExt(this.table.Id, error) > 0)
                     {
                         logger.Error("Репликация завершена " + this.table.LocalName + " (" + this.table.Id + "), хост:" + this.table.StationName);
