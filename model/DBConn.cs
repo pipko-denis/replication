@@ -179,8 +179,9 @@ namespace ReplicationWinService.model
             return result;
         }
 
-        public static int getLocalMaxReplId(ReplTableExt table)
+        public static int getLocalMaxReplId(ReplTableExt table, out bool error)
         {
+            error = true;
             int maxId = 0;
             MySqlCommand mySqlCommand = null;
             MySqlConnection conn = null;
@@ -203,6 +204,7 @@ namespace ReplicationWinService.model
                     }
                 }
                 logger.Info("Таблица " + table.LocalName + " последняя запись с id = " + maxId);
+                error = false;
             }
             catch (Exception ex)
             {

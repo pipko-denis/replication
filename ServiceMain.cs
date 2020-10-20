@@ -46,8 +46,13 @@ namespace ReplicationWinService
             DBConn.saveParamsOnServiceStop();
 
             //Получаем настройки
-            if (!Int32.TryParse(System.Configuration.ConfigurationManager.AppSettings.Get("maxReplThreads"),out maxReplThreads) ) {
+            if (!Int32.TryParse(System.Configuration.ConfigurationManager.AppSettings.Get("maxReplThreads"), out maxReplThreads))
+            {
+
                 maxReplThreads = 10;
+            }
+            else {
+                if (maxReplThreads > 20) maxReplThreads = 10;
             }
 
             if (!Boolean.TryParse(System.Configuration.ConfigurationManager.AppSettings.Get("showScripts"), out showScripts))
@@ -55,15 +60,15 @@ namespace ReplicationWinService
                 showScripts = false;
             }
 
-            if (!Int32.TryParse(System.Configuration.ConfigurationManager.AppSettings.Get("maxReplThreads"), out maxReplThreads))
+            if (!Int32.TryParse(System.Configuration.ConfigurationManager.AppSettings.Get("mainThreadSleepMs"), out mainThreadSleepMs))
             {
-                maxReplThreads = 2000;
+                mainThreadSleepMs = 1000;
             }
             else {
-                if (mainThreadSleepMs < 2000) mainThreadSleepMs = 2000;
+                if (mainThreadSleepMs < 100) mainThreadSleepMs = 100;
             }
-            
 
+            logger.Info("maxReplThreads: " + maxReplThreads + "; showScripts: " + showScripts + "; mainThreadSleepMs: " + mainThreadSleepMs);
 
 
             replMainThread = new Thread(doReplWork);

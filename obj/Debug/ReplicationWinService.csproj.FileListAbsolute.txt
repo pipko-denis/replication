@@ -23,7 +23,6 @@ F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\b
 F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\log4net.pdb
 F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\log4net.xml
 F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\bin\Debug\MySql.Data.xml
-F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\obj\Debug\ReplicationWinService.csprojAssemblyReference.cache
 F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\obj\Debug\ReplicationWinService.ProjectInstaller.resources
 F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\obj\Debug\ReplicationWinService.csproj.GenerateResource.cache
 F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\obj\Debug\ReplicationWinService.csproj.CoreCompileInputs.cache
@@ -40,3 +39,4 @@ E:\Development\RZD\SPIDER\Replication\replication\bin\Debug\ReplicationWinServic
 E:\Development\RZD\SPIDER\Replication\replication\bin\Debug\ReplicationWinService.pdb
 E:\Development\RZD\SPIDER\Replication\replication\obj\Debug\ReplicationWinService.csproj.CopyComplete
 E:\Development\RZD\SPIDER\Replication\replication\obj\Debug\ReplicationWinService.csprojAssemblyReference.cache
+F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\obj\Debug\ReplicationWinService.csprojAssemblyReference.cache

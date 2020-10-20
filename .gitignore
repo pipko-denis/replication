@@ -38,3 +38,4 @@ build/
 .vs*
 *Temporary*
 *.cache
+*.sln

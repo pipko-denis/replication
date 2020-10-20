@@ -31,6 +31,35 @@ namespace ReplicationWinService
             this.thread.Start();
         }
 
+
+        private void saveListToDatabase(List<String> listInsScripts) {
+            String insertStrBeg = table.getLocalInsertScriptBeg();
+            string str = insertStrBeg;
+            int incr = 0;
+            //foreach (String script in listInsScripts)
+            int countMinOne = listInsScripts.Count - 1;
+            for (int i = 0; i < listInsScripts.Count; i++)
+            {
+                if (incr > 4)
+                {
+                    if (ServiceMain.showScripts) logger.Info(str);
+                    DBConn.replicationInsert(str);
+                    incr = 0;
+                    str = insertStrBeg;
+                }
+                str += listInsScripts[i];
+                if ((incr < 4) && (i < countMinOne)) str += ", ";
+                incr++;
+            }
+            if (incr > 0)
+            {
+                if (ServiceMain.showScripts) logger.Info(str);
+                //ОЧень важная проверка, если в последнем блоке было не 5 зписей, то последняя запятая должна быть удалена
+                //if ( (incr < 4) && (str!=null) && (str.Length > 1)) str = str.Substring(0, str.Length);
+                DBConn.replicationInsert(str);
+            }
+        }
+
         private void doTableReplication()
         {
             bool error = false;
@@ -40,34 +69,15 @@ namespace ReplicationWinService
                 //ВЫПОЛНЕНИЕ РЕПЛИКАЦИИ
 
                 //получаем последнюю среплицированную запись
-                int maxId = DBConn.getLocalMaxReplId(this.table);
+                int maxId = DBConn.getLocalMaxReplId(this.table, out error);
 
-                List<String> listInsScripts = DBConn.getReplicationScripts(this.table, maxId, out error);
-
-                String insertStrBeg = table.getLocalInsertScriptBeg();
-
-
-                string str = insertStrBeg;
-                int incr = 0;
-                foreach (String script in listInsScripts)
+                if (!error)
                 {
-                    if (incr > 4)
-                    {
-                        if (ServiceMain.showScripts)  logger.Info(str);
-                        DBConn.replicationInsert(str);
-                        incr = 0;
-                        str = insertStrBeg;
-                    }
-                    str += script;
-                    if (incr < 4) str += ", ";
-                    incr++;
+                    List<String> listInsScripts = DBConn.getReplicationScripts(this.table, maxId, out error);
+                    saveListToDatabase(listInsScripts);
                 }
-                if (incr > 0)
-                {
-                    if (ServiceMain.showScripts) logger.Info(str);
-                    DBConn.replicationInsert(str);
-                }
-
+                
+                //logger.Info("RECORDCOUNT: " + listInsScripts.Count);
             }
             catch (Exception ex) {
                 logger.Error("Не удалось репликация таблицы " + this.table.LocalName + " ("+ this.table.Id + "), хост:" + this.table.StationName );
@@ -75,6 +85,7 @@ namespace ReplicationWinService
                 logger.Error(ex.StackTrace);
                 error = true;
             }
+
             int cntr = 0;
             while (true)  {
                 try
