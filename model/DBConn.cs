@@ -62,9 +62,11 @@ namespace ReplicationWinService.model
 
         }
 
-        public static int updateLastReplDateExt(Int32 tableId, bool error)
+        public static Boolean updateLastReplDateExt(Int32 stationId, Int32 tableId, bool error, out int cntTableRepl, out int cntStations)
         {
-            int result = 0;
+            Boolean result = false;
+            cntStations = -1;
+            cntTableRepl = -1;
             MySqlCommand mySqlCommand = null;
             MySqlConnection conn = null;
             try
@@ -73,12 +75,17 @@ namespace ReplicationWinService.model
                 conn.Open();
                 mySqlCommand = new MySqlCommand("UPDATE `t_stations_tables_replication` SET `repl_state` = 0, `last_repl_date` = now(), `last_repl_error` = "+
                     ((error) ? "1" : "0") +" WHERE `id` = "+tableId+";", conn);
-                result = mySqlCommand.ExecuteNonQuery();
+                cntTableRepl = mySqlCommand.ExecuteNonQuery();
                 //logger.Info("Скрипт \"" + script + "\" выполнен!");
+
+                if (error) mySqlCommand = new MySqlCommand("update `t_stations` Set `t_stations`.`repl_error` = 1  Where `id` = " + stationId + ";", conn);
+                else mySqlCommand = new MySqlCommand("update `t_stations` Set `t_stations`.`last_repl_date` = now(), `t_stations`.`repl_error` = 0 Where `id` = " + stationId + ";", conn);
+                cntStations = mySqlCommand.ExecuteNonQuery();
+                result = true;
             }
             catch (Exception ex)
             {
-                logger.Error("Не удалось обновить дату последней репликации \"" + tableId + "\"");
+                logger.Error("Не удалось обновить дату последней репликации \"" + tableId + "\" обновлено в t_stations: " + cntStations+ " обновлено в t_stations_tables_replication: " + cntTableRepl);
                 logger.Error(ex.Message);
                 logger.Error(ex.StackTrace);
             }
@@ -102,13 +109,13 @@ namespace ReplicationWinService.model
                 conn.Open();
                 logger.Info("updateLastReplDate conn.Open");
                 if (error) mySqlCommand = new MySqlCommand("update `t_stations` Set `t_stations`.`repl_error` = 1  Where `id` = " + stationId + ";", conn); 
-                else mySqlCommand = new MySqlCommand("update `t_stations` Set `t_stations`.`last_repl_date` = current_timestamp(), `t_stations`.`repl_error` = 0 Where `id` = " + stationId + ";", conn);
+                else mySqlCommand = new MySqlCommand("update `t_stations` Set `t_stations`.`last_repl_date` = now(), `t_stations`.`repl_error` = 0 Where `id` = " + stationId + ";", conn);
                 result = mySqlCommand.ExecuteNonQuery();
                 //logger.Info("Скрипт \"" + script + "\" выполнен!");
             }
             catch (Exception ex)
             {
-                logger.Error("Не удалось обновить дату последней репликации \"" + stationId + "\"");
+                logger.Error("Не удалось обновить дату последней репликации в t_stations \"" + stationId + "\"");
                 logger.Error(ex.Message);
                 logger.Error(ex.StackTrace);
             }

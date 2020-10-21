@@ -87,13 +87,16 @@ namespace ReplicationWinService
             }
 
             int cntr = 0;
+            int cntRecStaions = 0;
+            int cntRecReplTables = 0;
             while (true)  {
                 try
                 {
                     if  (cntr > 15) break; // if we can't save results more than 5 min (Thread.Sleep(20000);)
-                    if (DBConn.updateLastReplDateExt(this.table.Id, error) > 0)
+                    if (DBConn.updateLastReplDateExt(this.table.StationId,this.table.Id, error, out cntRecReplTables, out cntRecStaions) )
                     {
-                        logger.Error("Репликация завершена " + this.table.LocalName + " (" + this.table.Id + "), хост:" + this.table.StationName);
+                        logger.Error("Репликация завершена " + this.table.LocalName + " (" + this.table.Id + "), хост:" + this.table.StationName
+                            + "( кол. зап:"+ cntRecReplTables+","+ cntRecStaions);
                         break;
                     }
                     cntr++;

@@ -39,4 +39,3 @@ E:\Development\RZD\SPIDER\Replication\replication\bin\Debug\ReplicationWinServic
 E:\Development\RZD\SPIDER\Replication\replication\bin\Debug\ReplicationWinService.pdb
 E:\Development\RZD\SPIDER\Replication\replication\obj\Debug\ReplicationWinService.csproj.CopyComplete
 E:\Development\RZD\SPIDER\Replication\replication\obj\Debug\ReplicationWinService.csprojAssemblyReference.cache
-F:\DEVELOPMENT\SPIDER\Replication\ReplicationWinService2\ReplicationWinService\obj\Debug\ReplicationWinService.csprojAssemblyReference.cache
