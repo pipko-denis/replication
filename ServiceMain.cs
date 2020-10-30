@@ -40,6 +40,7 @@ namespace ReplicationWinService
         protected override void OnStart(string[] args)
         {
             logger.Info("Service started "+DateTime.Now);
+            logger.Info(ConnString.getMainConnectionString());
             stopService = false;
 
             //На всякий пожарный обнуляем в БД состояние репликации

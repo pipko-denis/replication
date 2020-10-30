@@ -43,10 +43,9 @@ namespace ReplicationWinService.model
         {
             try
             {
-                if (stationId != null) this.StationId = (int)stationId;
-                if (port != null) this.Port = (int)port;
-                logger.Error("maxCalcedId: " + maxCalcedId);
-                if (maxCalcedId != null) this.MaxCalcedId = (int)maxCalcedId;
+                if (stationId != null) this.StationId = Convert.ToInt32(stationId);
+                if (port != null) this.Port = Convert.ToInt32(port);
+                if (maxCalcedId != null) this.MaxCalcedId = Convert.ToInt32(maxCalcedId);
             }
             catch (Exception ex)
             {

@@ -312,75 +312,46 @@ namespace ReplicationWinService.model
             MySqlConnection conn = null;
             MySqlCommand mySqlCommand = null;
             MySqlCommand mySqlCommandFields = null;
+            MySqlDataReader reader = null;
+            MySqlDataReader reader1 = null;
             try
             {
 
                 conn = new MySqlConnection(ConnString.getMainConnectionString());
                 //mySqlCommand = new MySqlCommand("CALL `sp_repl_tables_get_one_for_repl`(@out_id,@out_local_name,@out_remote_name);", conn);// select @out_id, @out_local_name, @out_remote_name;", conn);
-                mySqlCommand = new MySqlCommand("sp_repl_tables_get_one_for_repl_ext", conn);
-
-                mySqlCommand.CommandType = CommandType.StoredProcedure;
-                mySqlCommand.Parameters.Add(new MySqlParameter("@_table_id", MySqlDbType.Int32));
-                mySqlCommand.Parameters["@_table_id"].Direction = ParameterDirection.Output;
-                mySqlCommand.Parameters.Add(new MySqlParameter("@_local_tbl_name", MySqlDbType.VarChar));
-                mySqlCommand.Parameters["@_local_tbl_name"].Direction = ParameterDirection.Output;
-                mySqlCommand.Parameters.Add(new MySqlParameter("@_remote_tbl_name", MySqlDbType.VarChar));
-                mySqlCommand.Parameters["@_remote_tbl_name"].Direction = ParameterDirection.Output;
-                mySqlCommand.Parameters.Add(new MySqlParameter("@_key_col_name", MySqlDbType.VarChar));
-                mySqlCommand.Parameters["@_key_col_name"].Direction = ParameterDirection.Output;
-                mySqlCommand.Parameters.Add(new MySqlParameter("@_repl_rec_count", MySqlDbType.Int32));
-                mySqlCommand.Parameters["@_repl_rec_count"].Direction = ParameterDirection.Output;
-
-                mySqlCommand.Parameters.Add(new MySqlParameter("@_station_id", MySqlDbType.Int32));
-                mySqlCommand.Parameters["@_station_id"].Direction = ParameterDirection.Output;
-                mySqlCommand.Parameters.Add(new MySqlParameter("@_host", MySqlDbType.VarChar));
-                mySqlCommand.Parameters["@_host"].Direction = ParameterDirection.Output;
-                mySqlCommand.Parameters.Add(new MySqlParameter("@_port", MySqlDbType.Int32));
-                mySqlCommand.Parameters["@_port"].Direction = ParameterDirection.Output;
-                mySqlCommand.Parameters.Add(new MySqlParameter("@_login", MySqlDbType.VarChar));
-                mySqlCommand.Parameters["@_login"].Direction = ParameterDirection.Output;
-
-                mySqlCommand.Parameters.Add(new MySqlParameter("@_passwd", MySqlDbType.VarChar));
-                mySqlCommand.Parameters["@_passwd"].Direction = ParameterDirection.Output;
-                mySqlCommand.Parameters.Add(new MySqlParameter("@_db", MySqlDbType.VarChar));
-                mySqlCommand.Parameters["@_db"].Direction = ParameterDirection.Output;
-                mySqlCommand.Parameters.Add(new MySqlParameter("@_max_calced_id", MySqlDbType.Int32));
-                mySqlCommand.Parameters["@_max_calced_id"].Direction = ParameterDirection.Output;
-                mySqlCommand.Parameters.Add(new MySqlParameter("@_display_name", MySqlDbType.VarChar));
-                mySqlCommand.Parameters["@_display_name"].Direction = ParameterDirection.Output;
-                mySqlCommand.Parameters.Add(new MySqlParameter("@_last_repl_date", MySqlDbType.VarChar));
-                mySqlCommand.Parameters["@_last_repl_date"].Direction = ParameterDirection.Output;
+                mySqlCommand = new MySqlCommand("sp_repl_tables_get_one_for_repl_last", conn);
 
                 conn.Open();
-                mySqlCommand.ExecuteNonQuery();
+                reader1 = mySqlCommand.ExecuteReader();
 
-
-                if (!mySqlCommand.Parameters["@_table_id"].Value.Equals(DBNull.Value))
+                if ( (reader1.HasRows) && (reader1.Read()))
                 {
 
                     result = new ReplTableExt(
-                        mySqlCommand.Parameters["@_table_id"].Value,
-                        mySqlCommand.Parameters["@_local_tbl_name"].Value,
-                        mySqlCommand.Parameters["@_remote_tbl_name"].Value,
-                        mySqlCommand.Parameters["@_key_col_name"].Value,
-                        mySqlCommand.Parameters["@_repl_rec_count"].Value,
+                                            reader1.GetValue(0),
+                                            reader1.GetValue(1),
+                                            reader1.GetValue(2),
+                                            reader1.GetValue(3),
+                                            reader1.GetValue(4),
 
-                        mySqlCommand.Parameters["@_station_id"].Value,
-                        mySqlCommand.Parameters["@_host"].Value,
-                        mySqlCommand.Parameters["@_port"].Value,
-                        mySqlCommand.Parameters["@_login"].Value,
-                        mySqlCommand.Parameters["@_passwd"].Value,
-                        mySqlCommand.Parameters["@_db"].Value,
-                        mySqlCommand.Parameters["@_max_calced_id"].Value,
-                        mySqlCommand.Parameters["@_display_name"].Value,
-                        mySqlCommand.Parameters["@_last_repl_date"].Value
-                    );
+                                            reader1.GetValue(5),
+                                            reader1.GetValue(6),
+                                            reader1.GetValue(7),
+                                            reader1.GetValue(8),
+                                            reader1.GetValue(9),
+                                            reader1.GetValue(10),
+                                            reader1.GetValue(13),
+                                            reader1.GetValue(11),
+                                            reader1.GetValue(12)
+                                            
+                                        );
+                    reader1.Close();
 
                     mySqlCommandFields = new MySqlCommand("SELECT COLUMN_NAME,columns.DATA_TYPE " +
                                          "FROM information_schema.columns WHERE table_schema='spider_cdc' AND table_name='" + result.LocalName + "' " +
                                          "AND NOT COLUMN_NAME IN ('id_repl','station_id') ORDER BY ORDINAL_POSITION;", conn);
 
-                    MySqlDataReader reader = mySqlCommandFields.ExecuteReader();
+                    reader = mySqlCommandFields.ExecuteReader();
 
                     if (result.localFields == null) result.localFields = new List<ReplField>();
 
@@ -403,6 +374,8 @@ namespace ReplicationWinService.model
             }
             finally
             {
+                if (reader != null) reader.Close();
+                if (reader1 != null) reader1.Close();
                 if (mySqlCommand != null) mySqlCommand.Dispose();
                 if (mySqlCommandFields != null) mySqlCommandFields.Dispose();
                 if (conn != null) { conn.Close(); }
