@@ -58,7 +58,7 @@
     <Compile Include="model\ReplTable.cs" />
     <Compile Include="model\ReplTableExt.cs" />
     <Compile Include="model\Station.cs" />
-    <Compile Include="ReplTableThread.cs" />
+    <Compile Include="ReplTableThreadOld.cs" />
     <Compile Include="TableThread.cs" />
     <Compile Include="Utills.cs" />
     <Compile Include="ProjectInstaller.cs">

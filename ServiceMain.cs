@@ -53,7 +53,7 @@ namespace ReplicationWinService
                 maxReplThreads = 10;
             }
             else {
-                if (maxReplThreads > 20) maxReplThreads = 10;
+                if (maxReplThreads > 20) maxReplThreads = 20;
             }
 
             if (!Boolean.TryParse(System.Configuration.ConfigurationManager.AppSettings.Get("showScripts"), out showScripts))
@@ -76,17 +76,12 @@ namespace ReplicationWinService
             replMainThread.Start();
         }
 
-        private static bool threadIsAlive(TableThread tableThread)
-        {
-            return tableThread.thread.IsAlive;
-        }
-
 
         private void doReplWork(object arg)
         {
 
-            ReplTableExt table = null;
-
+            ReplTableExt table = null;     
+            
             while (true)
             {
                 if (stopService) { break; }
@@ -97,45 +92,60 @@ namespace ReplicationWinService
                 TimeSpan ts;
                 DateTime currentTime = DateTime.Now;
                 List<TableThread> listDelThreads = null;
-                bool addingToRemoveList = false;
                 foreach (TableThread thread in listThreads) {
-                    addingToRemoveList = false;
                     ts = currentTime - thread.dateStart;
                     logger.Info("Thread for table " + thread.table.LocalName + ", state " + thread.thread.ThreadState);
 
                     //Проверки
-                    if (ts.TotalMinutes > 15) {
-                        logger.Info("Stopping thread for table "+ thread.table.LocalName+ ", started at " + thread.dateStart);                        
-                        addingToRemoveList = true;
-                    } else if (thread.thread.ThreadState == System.Threading.ThreadState.Stopped) {
-                        logger.Info("Stopping thread for table " + thread.table.LocalName + ", because  it is not alive");
-                        addingToRemoveList = true;
-                    }
-
-                    //добавление в список удаляемых потоков и отключение (Abort) старых потоков
-                    if (addingToRemoveList)
-                    {
+                    if (ts.TotalMinutes > 10) {
+                        logger.Error("Stopping thread for table (15 minutes timeout)" + thread.table.LocalName + ", started at " + thread.dateStart);
                         if (listDelThreads == null) listDelThreads = new List<TableThread>();
                         listDelThreads.Add(thread);
-                        thread.thread.Abort();                        
+                    } else if (thread.thread.ThreadState == System.Threading.ThreadState.Stopped) {
+                        logger.Info("Stopping thread for table " + thread.table.LocalName + ", because  it is not alive");
+                        if (listDelThreads == null) listDelThreads = new List<TableThread>();
+                        listDelThreads.Add(thread);                        
                     }
-/**/
+
 
                 }
 
                 //Удаляем потоки из списка текущих потоков
-                if (listDelThreads != null) {
+                if ( (listDelThreads != null) && (listThreads != null) ) {
                     listThreads = listThreads.Except(listDelThreads).ToList();
+                    foreach (TableThread thread in listDelThreads)
+                    {
+                        if ( (thread == null) || (thread.thread == null) ) continue;
+                        try
+                        {
+                            thread.thread.Abort();
+                        }
+                        catch (Exception ex)
+                        {
+                            logger.Error("Thread abort error " + thread.table.LocalName + " " + ex.Message);
+                            logger.Error(ex.StackTrace);
+                            logger.Error(ex.InnerException);
+                        }
+                    }
                 }
+
                 //проверяем не пора ли прибить какой-то поток, т.к. он слишком долго работает - конец
 
 
                 //проверяем, если потоков уже максимальное кол-во, то больше пока что не создаём                
-                if (listThreads.Count >= maxReplThreads) {
-                    continue;
+                try
+                {
+                    if (listThreads.Count >= maxReplThreads)
+                    {
+                        continue;
+                    }
+                    logger.Info("listThreads.Count = " + listThreads.Count + ", max threads " + maxReplThreads);
                 }
-                logger.Info("listThreads.Count = " + listThreads.Count + ", max threads " + maxReplThreads);
-
+                catch (Exception ex) {
+                    logger.Error(ex.Message);
+                    logger.Error(ex.StackTrace);
+                    logger.Error(ex.InnerException);
+                }
                 //получение из БД таблицы которую мы слишком долго не реплицировали
                 table = DBConn.getReplicationTableExt();
                 //создание нового потока, добавление его в список действующих потоков
@@ -159,30 +169,7 @@ namespace ReplicationWinService
 
         }
 
-        [Obsolete("Depricated")]
-        private void doReplWorkOld(object arg)
-        {
 
-            ReplTable table = null;
-
-            while (true){
-                if (stopService) { break; }
-
-                table = DBConn.getReplicationTable();
-
-                try {
-                    if (table != null) new ReplTableThread(table);
-                }catch (Exception ex) {
-                    logger.Error(ex.Message);
-                    logger.Error(ex.StackTrace);
-                }
-
-                Thread.Sleep(5000);
-
-            }
-
-
-        }
 
 
         protected override void OnStop()

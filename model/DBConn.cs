@@ -374,11 +374,16 @@ namespace ReplicationWinService.model
             }
             finally
             {
-                if (reader != null) reader.Close();
-                if (reader1 != null) reader1.Close();
-                if (mySqlCommand != null) mySqlCommand.Dispose();
-                if (mySqlCommandFields != null) mySqlCommandFields.Dispose();
-                if (conn != null) { conn.Close(); }
+                try { 
+                    if (reader != null) reader.Close();
+                    if (reader1 != null) reader1.Close();
+                    if (mySqlCommand != null) mySqlCommand.Dispose();
+                    if (mySqlCommandFields != null) mySqlCommandFields.Dispose();
+                    if (conn != null) conn.Close(); 
+                }catch (Exception exx){
+                    logger.Error("Не удалось получить таблицу для репликации(getReplicationTable):" + exx.Message);
+                    logger.Error(exx.StackTrace);
+                }
             }
 
             return result;
@@ -496,10 +501,11 @@ namespace ReplicationWinService.model
             try
             {
                 String remoteSelectScript = table.getRemoteSelectScript(startId);
-                conn = new MySqlConnection("Server=" + table.Host + ";Port=" + table.Port + ";Database=" + table.Db + ";Uid=" + table.Login + ";Pwd=" + table.Pass + ";Connection Timeout=30;default command timeout=20;");
+                conn = new MySqlConnection("Server=" + table.Host + ";Port=" + table.Port + ";Database=" + table.Db + ";Uid=" + table.Login + ";Pwd=" + table.Pass + ";Connection Timeout=15;default command timeout=120; Connection Lifetime = 300;");
                 conn.Open();
                 mySqlCommand = new MySqlCommand(remoteSelectScript, conn);
                 mySqlCommand.CommandTimeout = 30;
+
                 logger.Info(table.getRemoteSelectScript(startId));
                 MySqlDataReader reader = mySqlCommand.ExecuteReader();
                 String values = "";

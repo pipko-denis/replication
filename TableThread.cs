@@ -27,12 +27,13 @@ namespace ReplicationWinService
             this.dateStart = DateTime.Now;
             this.thread = new Thread(doTableReplication);
             this.table = table;
-            logger.Error("Запускаем репликацию " + this.table.LocalName + " (" + this.table.Id + "), хост:" + this.table.StationName);
+            logger.Info("Запускаем репликацию " + this.table.LocalName + " хост:" + this.table.StationName + " (" + this.table.StationId + ")");
             this.thread.Start();
         }
 
 
         private void saveListToDatabase(List<String> listInsScripts) {
+            logger.Info("Сохраняем данные saveListToDatabase " + this.table.LocalName + " хост:" + this.table.StationName + " (" + this.table.StationId + ")");
             String insertStrBeg = table.getLocalInsertScriptBeg();
             string str = insertStrBeg;
             int incr = 0;
@@ -65,11 +66,14 @@ namespace ReplicationWinService
             bool error = false;
             try
             {
+                logger.Info("Запускаем метод doTableReplication " + this.table.LocalName + " хост:" + this.table.StationName + " (" + this.table.StationId + ")");
                 //Thread.Sleep(1000);
                 //ВЫПОЛНЕНИЕ РЕПЛИКАЦИИ
 
                 //получаем последнюю среплицированную запись
                 int maxId = DBConn.getLocalMaxReplId(this.table, out error);
+
+                logger.Info("Получили maxId = "+ maxId +" для " + this.table.LocalName + " хост:" + this.table.StationName + " (" + this.table.StationId + ")");
 
                 if (!error)
                 {
@@ -92,12 +96,21 @@ namespace ReplicationWinService
             while (true)  {
                 try
                 {
-                    if  (cntr > 15) break; // if we can't save results more than 5 min (Thread.Sleep(20000);)
-                    if (DBConn.updateLastReplDateExt(this.table.StationId,this.table.Id, error, out cntRecReplTables, out cntRecStaions) )
+                    if (cntr > 15)
                     {
-                        logger.Error("Репликация завершена " + this.table.LocalName + " (" + this.table.Id + "), хост:" + this.table.StationName
-                            + "( кол. зап:"+ cntRecReplTables+","+ cntRecStaions);
+                        logger.Error("Репликация завершена, отментку в БД сделать не удалось за 15 попыток " + this.table.LocalName + " (" + this.table.Id + "), хост:" + this.table.StationName
+                            + "( кол. зап:" + cntRecReplTables + "," + cntRecStaions+")");
+                        break; // if we can't save results more than 5 min (Thread.Sleep(20000);)
+                    }
+                    if (DBConn.updateLastReplDateExt(this.table.StationId, this.table.Id, error, out cntRecReplTables, out cntRecStaions))
+                    {
+                        logger.Info("Репликация завершена " + this.table.LocalName + " (" + this.table.Id + "), хост:" + this.table.StationName
+                            + "( кол. зап:" + cntRecReplTables + "," + cntRecStaions + ")");
                         break;
+                    }
+                    else {
+                        logger.Error("Репликация НЕ завершена " + this.table.LocalName + " (" + this.table.Id + "), хост:" + this.table.StationName
+                                + "( кол. зап:" + cntRecReplTables + "," + cntRecStaions + ")");
                     }
                     cntr++;
                 }
