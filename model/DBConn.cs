@@ -501,7 +501,7 @@ namespace ReplicationWinService.model
             try
             {
                 String remoteSelectScript = table.getRemoteSelectScript(startId);
-                conn = new MySqlConnection("Server=" + table.Host + ";Port=" + table.Port + ";Database=" + table.Db + ";Uid=" + table.Login + ";Pwd=" + table.Pass + ";Connection Timeout=15;default command timeout=120; Connection Lifetime = 300;");
+                conn = new MySqlConnection("Server=" + table.Host + ";Port=" + table.Port + ";Database=" + table.Db + ";Uid=" + table.Login + ";Pwd=" + table.Pass + ";Connection Timeout=15;default command timeout=120;");//Connection Lifetime = 300;
                 conn.Open();
                 mySqlCommand = new MySqlCommand(remoteSelectScript, conn);
                 mySqlCommand.CommandTimeout = 30;
@@ -556,6 +556,36 @@ namespace ReplicationWinService.model
                 logger.Error(ex.Message);
                 logger.Error(ex.StackTrace);
                 error = true;
+            }
+            finally
+            {
+                if (mySqlCommand != null) mySqlCommand.Dispose();
+                if (conn != null) conn.Close();
+            }
+            return result;
+        }
+
+        public static int updateOldStates(int minCount)
+        {            
+            if (minCount < 20) minCount = 20;
+
+            int result = -1;
+            MySqlCommand mySqlCommand = null;
+            MySqlConnection conn = null;
+
+            try
+            {
+                conn = new MySqlConnection(ConnString.getMainConnectionString());
+                conn.Open();
+                mySqlCommand = new MySqlCommand("UPDATE t_stations_tables_replication SET repl_state = 0 " +
+                                                " WHERE repl_state = 1 AND COALESCE(TIMEDIFF(now(), i.`last_repl_start` ) > CAST('"+minCount+":00:00' as time),1) = 1;", conn);
+                result = mySqlCommand.ExecuteNonQuery();                
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Не удалось сохранить repl_state = 0 для всех таблиц имеющих статус repl_state = 0 " + minCount + "минут.");
+                logger.Error(ex.Message);
+                logger.Error(ex.StackTrace);
             }
             finally
             {

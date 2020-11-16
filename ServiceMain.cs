@@ -25,6 +25,9 @@ namespace ReplicationWinService
 
         private static int mainThreadSleepMs = 5000;
 
+        private static int checkThreadSleepMs = 600000;
+
+        private static int deltaCheckTime = 20;
 
         private static List<TableThread> listThreads = new List<TableThread>();
 
@@ -69,11 +72,34 @@ namespace ReplicationWinService
                 if (mainThreadSleepMs < 100) mainThreadSleepMs = 100;
             }
 
+
+            if (!Int32.TryParse(System.Configuration.ConfigurationManager.AppSettings.Get("deltaCheckTime"), out deltaCheckTime))
+            {
+                deltaCheckTime = 20;
+            }
+            else
+            {
+                if (deltaCheckTime < 10) deltaCheckTime = 20;
+            }
+
+            if (!Int32.TryParse(System.Configuration.ConfigurationManager.AppSettings.Get("checkThreadSleepMs"), out checkThreadSleepMs))
+            {
+                checkThreadSleepMs = 600000;
+            }
+            else
+            {
+                if (checkThreadSleepMs < 300000) checkThreadSleepMs = 600000;
+            }
+
+
             logger.Info("maxReplThreads: " + maxReplThreads + "; showScripts: " + showScripts + "; mainThreadSleepMs: " + mainThreadSleepMs);
 
 
             replMainThread = new Thread(doReplWork);
             replMainThread.Start();
+
+            replMainThread = new Thread(doCheckState);
+            replMainThread.Start();            
         }
 
 
@@ -167,6 +193,32 @@ namespace ReplicationWinService
             }
 
 
+        }
+
+
+        private void doCheckState(object arg)
+        {
+
+            while (true)
+            {
+                if (stopService) { break; }
+
+                Thread.Sleep(checkThreadSleepMs);
+
+                try
+                {
+                    logger.Error("Начинаем проверку старых статусов! Статус основного потока "+replMainThread.ThreadState);
+                    int cntUpdated = DBConn.updateOldStates(deltaCheckTime);
+                    if (cntUpdated > 0) {
+                        logger.Error("СТАРЫЕ СТАТУСЫ ОБНОВЛЕНЫ (" + cntUpdated +" ШТ)");
+                    }
+                }
+                catch (Exception ex) {
+                    logger.Error("Ошибка при проверке старых статусов репликации");
+                    logger.Error(ex.Message);
+                    logger.Error(ex.StackTrace);
+                }
+            }
         }
 
 
