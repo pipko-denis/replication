@@ -500,18 +500,35 @@ namespace ReplicationWinService.model
 
             try
             {
+                if (table.StationId == 38) logger.Info(table.LocalName + " Начинаем подключение к БД");
                 String remoteSelectScript = table.getRemoteSelectScript(startId);
+                if (table.StationId == 38)
+                {
+                    conn = new MySqlConnection("Server=" + table.Host + ";Port=" + table.Port + ";Database=" + table.Db + ";Uid=" + table.Login + ";Pwd=" + table.Pass + ";Connection Timeout=15;default command timeout=120;");//Connection Lifetime = 300;
+                }
+                else {
+                    conn = new MySqlConnection("Server=" + table.Host + ";Port=" + table.Port + ";Database=" + table.Db + ";Uid=" + table.Login + ";Pwd=" + table.Pass + ";Connection Timeout=15;default command timeout=120;");//Connection Lifetime = 300;
+                }
                 conn = new MySqlConnection("Server=" + table.Host + ";Port=" + table.Port + ";Database=" + table.Db + ";Uid=" + table.Login + ";Pwd=" + table.Pass + ";Connection Timeout=15;default command timeout=120;");//Connection Lifetime = 300;
                 conn.Open();
+                if (table.StationId == 38) logger.Info(table.LocalName + " Подключились к БД");
                 mySqlCommand = new MySqlCommand(remoteSelectScript, conn);
                 mySqlCommand.CommandTimeout = 30;
 
-                logger.Info(table.getRemoteSelectScript(startId));
+                logger.Info(table.LocalName + ": "+table.getRemoteSelectScript(startId));
                 MySqlDataReader reader = mySqlCommand.ExecuteReader();
                 String values = "";
 
+                int cnt = 0;
                 while (reader.Read())
                 {
+                    if (table.StationId == 38)
+                    {
+                        cnt++;
+                        if (cnt % 100 == 0) {
+                            logger.Info(table.LocalName + ": "+cnt);
+                        }                        
+                    }
                     values = "(";
                     int cntFlds = table.localFields.Count()-1;
                     for (int i = 0; i < table.localFields.Count(); i++)
@@ -576,10 +593,12 @@ namespace ReplicationWinService.model
             try
             {
                 conn = new MySqlConnection(ConnString.getMainConnectionString());
-                conn.Open();
+                //logger.Error("updateOldStates conn.Open();");
+                conn.Open();                
                 mySqlCommand = new MySqlCommand("UPDATE t_stations_tables_replication SET repl_state = 0 " +
-                                                " WHERE repl_state = 1 AND COALESCE(TIMEDIFF(now(), i.`last_repl_start` ) > CAST('"+minCount+":00:00' as time),1) = 1;", conn);
-                result = mySqlCommand.ExecuteNonQuery();                
+                                                " WHERE repl_state = 1 AND COALESCE(TIMEDIFF(now(), `last_repl_start` ) > CAST('"+minCount+":00:00' as time),1) = 1;", conn);
+                //logger.Error("updateOldStates mySqlCommand.ExecuteNonQuery()");
+                result = mySqlCommand.ExecuteNonQuery();
             }
             catch (Exception ex)
             {

@@ -27,11 +27,13 @@ namespace ReplicationWinService
 
         private static int checkThreadSleepMs = 600000;
 
-        private static int deltaCheckTime = 20;
+        private static int deltaCheckTime = 15;
 
         private static List<TableThread> listThreads = new List<TableThread>();
 
         private Thread replMainThread;
+
+        private Thread checkThread;
 
         public static bool stopService = false;
 
@@ -98,8 +100,8 @@ namespace ReplicationWinService
             replMainThread = new Thread(doReplWork);
             replMainThread.Start();
 
-            replMainThread = new Thread(doCheckState);
-            replMainThread.Start();            
+            checkThread = new Thread(doCheckState);
+            checkThread.Start();            
         }
 
 
@@ -123,8 +125,8 @@ namespace ReplicationWinService
                     logger.Info("Thread for table " + thread.table.LocalName + ", state " + thread.thread.ThreadState);
 
                     //Проверки
-                    if (ts.TotalMinutes > 10) {
-                        logger.Error("Stopping thread for table (15 minutes timeout)" + thread.table.LocalName + ", started at " + thread.dateStart);
+                    if (ts.TotalMinutes > 3) {
+                        logger.Error("Stopping thread for table (3 minutes timeout)" + thread.table.LocalName + ", started at " + thread.dateStart);
                         if (listDelThreads == null) listDelThreads = new List<TableThread>();
                         listDelThreads.Add(thread);
                     } else if (thread.thread.ThreadState == System.Threading.ThreadState.Stopped) {
@@ -209,9 +211,7 @@ namespace ReplicationWinService
                 {
                     logger.Error("Начинаем проверку старых статусов! Статус основного потока "+replMainThread.ThreadState);
                     int cntUpdated = DBConn.updateOldStates(deltaCheckTime);
-                    if (cntUpdated > 0) {
-                        logger.Error("СТАРЫЕ СТАТУСЫ ОБНОВЛЕНЫ (" + cntUpdated +" ШТ)");
-                    }
+                    logger.Error("СТАРЫЕ СТАТУСЫ ОБНОВЛЕНЫ (" + cntUpdated + " ШТ)");
                 }
                 catch (Exception ex) {
                     logger.Error("Ошибка при проверке старых статусов репликации");
